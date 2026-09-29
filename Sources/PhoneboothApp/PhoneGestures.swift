@@ -67,7 +67,7 @@ enum GestureClassifier {
     }
 }
 
-/// The body for Phone Mirror's `/phonemirror/touch` route in WebDriverAgent (wda/PMFastInputCommands.m):
+/// The body for Phonebooth's `/phonebooth/touch` route in WebDriverAgent (wda/PBFastInputCommands.m):
 /// a finger path in phone points with times in seconds, lifted `hold` seconds after the last point.
 enum FastTouch {
     static let tapHold: TimeInterval = 0.05

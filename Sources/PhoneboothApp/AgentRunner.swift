@@ -231,7 +231,7 @@ final class AgentRunner {
 }
 
 /// Collects a helper's output: whole lines for the caller, the recent tail for error messages,
-/// and everything in ~/Library/Logs/Phone Mirror/helper-<phone>.log.
+/// and everything in ~/Library/Logs/Phonebooth/helper-<phone>.log.
 private final class AgentTranscript: @unchecked Sendable {
     private let lock = NSLock()
     private var partial = ""

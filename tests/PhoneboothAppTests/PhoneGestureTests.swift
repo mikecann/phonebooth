@@ -1,5 +1,5 @@
 import XCTest
-@testable import PhoneMirrorApp
+@testable import PhoneboothApp
 
 final class GestureClassifierTests: XCTestCase {
     private let screen = CGSize(width: 414, height: 896)

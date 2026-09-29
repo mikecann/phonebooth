@@ -3,12 +3,12 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BUILD_CONFIGURATION="${PHONE_MIRROR_BUILD_CONFIGURATION:-release}"
-APP_NAME="Phone Mirror"
-APP_DIR="${PHONE_MIRROR_APP_DIR:-$HOME/Applications/$APP_NAME.app}"
-APP_BIN="$APP_DIR/Contents/MacOS/phone-mirror-swift"
-ICON_SOURCE="$SCRIPT_DIR/icons/phone-mirror.png"
-SIGNING_IDENTITY="${PHONE_MIRROR_CODESIGN_IDENTITY:-}"
+BUILD_CONFIGURATION="${PHONEBOOTH_BUILD_CONFIGURATION:-release}"
+APP_NAME="Phonebooth"
+APP_DIR="${PHONEBOOTH_APP_DIR:-$HOME/Applications/$APP_NAME.app}"
+APP_BIN="$APP_DIR/Contents/MacOS/phonebooth-swift"
+ICON_SOURCE="$SCRIPT_DIR/icons/phonebooth.png"
+SIGNING_IDENTITY="${PHONEBOOTH_CODESIGN_IDENTITY:-}"
 SIGNING_REQUIREMENTS=()
 
 if ! command -v swift >/dev/null 2>&1; then
@@ -16,10 +16,10 @@ if ! command -v swift >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Building Phone Mirror ($BUILD_CONFIGURATION)..."
+echo "Building Phonebooth ($BUILD_CONFIGURATION)..."
 swift build --package-path "$SCRIPT_DIR" -c "$BUILD_CONFIGURATION"
 BIN_DIR="$(swift build --package-path "$SCRIPT_DIR" -c "$BUILD_CONFIGURATION" --show-bin-path)"
-BINARY="$BIN_DIR/phone-mirror-swift"
+BINARY="$BIN_DIR/phonebooth-swift"
 
 if [[ ! -x "$BINARY" ]]; then
   echo "ERROR: built binary not found at $BINARY"
@@ -33,18 +33,18 @@ cp "$BINARY" "$APP_BIN"
 cp "$SCRIPT_DIR/Resources/Info.plist" "$APP_DIR/Contents/Info.plist"
 cp "$SCRIPT_DIR/agent.sh" "$APP_DIR/Contents/Resources/agent.sh"
 mkdir -p "$APP_DIR/Contents/Resources/wda"
-cp "$SCRIPT_DIR/wda/PMFastInputCommands.m" "$APP_DIR/Contents/Resources/wda/"
+cp "$SCRIPT_DIR/wda/PBFastInputCommands.m" "$APP_DIR/Contents/Resources/wda/"
 chmod +x "$APP_BIN" "$APP_DIR/Contents/Resources/agent.sh"
 
 if [[ -f "$ICON_SOURCE" ]]; then
-  ICONSET="$(mktemp -d)/phone-mirror.iconset"
+  ICONSET="$(mktemp -d)/phonebooth.iconset"
   mkdir -p "$ICONSET"
   for size in 16 32 128 256 512; do
     sips -z "$size" "$size" "$ICON_SOURCE" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
     double=$((size * 2))
     sips -z "$double" "$double" "$ICON_SOURCE" --out "$ICONSET/icon_${size}x${size}@2x.png" >/dev/null
   done
-  iconutil -c icns "$ICONSET" -o "$APP_DIR/Contents/Resources/phone-mirror.icns"
+  iconutil -c icns "$ICONSET" -o "$APP_DIR/Contents/Resources/phonebooth.icns"
   rm -rf "$(dirname "$ICONSET")"
 fi
 

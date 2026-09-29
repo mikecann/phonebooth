@@ -32,7 +32,7 @@ final class PhoneAgent: @unchecked Sendable {
         http = URLSession(configuration: configuration)
     }
 
-    /// Opens the session typing needs. Touches don't use it: they go through Phone Mirror's
+    /// Opens the session typing needs. Touches don't use it: they go through Phonebooth's
     /// own route, which skips WebDriverAgent's slow app lookups entirely.
     func connect() async throws {
         let response = try await request("POST", "session", [
@@ -56,7 +56,7 @@ final class PhoneAgent: @unchecked Sendable {
               let height = (value["height"] as? NSNumber)?.doubleValue else {
             throw AgentError(errorDescription: "The phone helper didn't report its screen size")
         }
-        let orientationResponse = try await request("GET", "phonemirror/orientation")
+        let orientationResponse = try await request("GET", "phonebooth/orientation")
         let interfaceOrientation = (orientationResponse["value"] as? NSNumber)?.intValue ?? 1
         lock.withLock {
             size = CGSize(width: width, height: height)
@@ -89,7 +89,7 @@ final class PhoneAgent: @unchecked Sendable {
     private func touch(_ path: [TimedPoint], hold: TimeInterval) {
         enqueue { [self] in
             let orientation = lock.withLock { self.orientation }
-            _ = try await request("POST", "phonemirror/touch", FastTouch.payload(path, hold: hold, orientation: orientation))
+            _ = try await request("POST", "phonebooth/touch", FastTouch.payload(path, hold: hold, orientation: orientation))
         }
     }
 
@@ -115,7 +115,7 @@ final class PhoneAgent: @unchecked Sendable {
     /// A Shift press that resets the phone's auto-lock timer. See `KeepAwake`.
     func nudge() {
         enqueue { [self] in
-            _ = try await request("POST", "phonemirror/nudge", [:])
+            _ = try await request("POST", "phonebooth/nudge", [:])
         }
     }
 

@@ -5,15 +5,15 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleExecutable</key>
-    <string>phone-mirror-swift</string>
+    <string>phonebooth-swift</string>
     <key>CFBundleIdentifier</key>
-    <string>com.mikerosoft.phone-mirror</string>
+    <string>com.mikerosoft.phonebooth</string>
     <key>CFBundleName</key>
-    <string>Phone Mirror</string>
+    <string>Phonebooth</string>
     <key>CFBundleDisplayName</key>
-    <string>Phone Mirror</string>
+    <string>Phonebooth</string>
     <key>CFBundleIconFile</key>
-    <string>phone-mirror</string>
+    <string>phonebooth</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -27,17 +27,17 @@
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSCameraUsageDescription</key>
-    <string>Phone Mirror shows the screen of an iPhone or iPad plugged in with a USB cable. macOS treats that screen as a camera.</string>
+    <string>Phonebooth shows the screen of an iPhone or iPad plugged in with a USB cable. macOS treats that screen as a camera.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>A plugged-in iPhone or iPad sends its audio alongside its screen.</string>
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
             <key>CFBundleURLName</key>
-            <string>com.mikerosoft.phone-mirror</string>
+            <string>com.mikerosoft.phonebooth</string>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>phonemirror</string>
+                <string>phonebooth</string>
             </array>
         </dict>
     </array>

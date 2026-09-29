@@ -13,7 +13,7 @@ enum DeviceDirectory {
     static func lookup(name: String) async -> PhoneDeviceInfo? {
         await Task.detached {
             let output = FileManager.default.temporaryDirectory
-                .appendingPathComponent("phone-mirror-devices-\(UUID().uuidString).json")
+                .appendingPathComponent("phonebooth-devices-\(UUID().uuidString).json")
             defer { try? FileManager.default.removeItem(at: output) }
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")

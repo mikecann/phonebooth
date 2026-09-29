@@ -195,7 +195,7 @@ final class MirrorWindowController: NSWindowController, NSWindowDelegate {
         window.backgroundColor = .black
         window.contentView = mirrorView
         // Keyed by the capture device so each phone reopens where it was last left.
-        let autosaveName = "PhoneMirror.\(device.uniqueID)"
+        let autosaveName = "Phonebooth.\(device.uniqueID)"
         restoredFrame = window.setFrameUsingName(autosaveName)
         window.setFrameAutosaveName(autosaveName)
         if !restoredFrame { window.center() }
@@ -240,7 +240,7 @@ final class MirrorWindowController: NSWindowController, NSWindowDelegate {
         runner.stop()
     }
 
-    /// Handles `phonemirror://` commands for testing control from the terminal:
+    /// Handles `phonebooth://` commands for testing control from the terminal:
     /// `tap?x=0.5&y=0.5` (fractions of the screen), `type?text=hello`, `swipe?dy=-300`, `home`.
     func perform(_ url: URL) {
         guard let agent = runner.agent else {

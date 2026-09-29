@@ -1,5 +1,5 @@
 import XCTest
-@testable import PhoneMirrorApp
+@testable import PhoneboothApp
 
 final class MirrorSizingTests: XCTestCase {
     private let laptop = CGRect(x: 0, y: 0, width: 1512, height: 944)

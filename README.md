@@ -1,4 +1,4 @@
-# phone-mirror
+# phonebooth
 
 ![Three iPhones and iPads cabled to a Mac, each mirrored in its own frosted window while a pointer taps one screen](docs/header.webp)
 
@@ -7,7 +7,7 @@ Each phone gets its own window. Click to tap, drag to swipe, scroll to scroll,
 and type to type.
 
 Apple's own iPhone Mirroring only handles one phone at a time and only over
-Wi-Fi. Phone Mirror doesn't have either limit, and it needs no Bluetooth pairing
+Wi-Fi. Phonebooth doesn't have either limit, and it needs no Bluetooth pairing
 or AssistiveTouch.
 
 ## What it does
@@ -52,10 +52,10 @@ for you to unlock the phone, or ready.
 ## Setup
 
 ```bash
-bash tools/phone-mirror/setup_mac.sh
+bash tools/phonebooth/setup_mac.sh
 ```
 
-Then launch **Phone Mirror** from Spotlight, or run `phone-mirror` after
+Then launch **Phonebooth** from Spotlight, or run `phonebooth` after
 `bash install_mac.sh`.
 
 Control needs a few one-off steps:
@@ -66,12 +66,12 @@ Control needs a few one-off steps:
 2. **Turn on Developer Mode** on each phone (Settings > Privacy & Security >
    Developer Mode). It appears once the phone has been plugged into a Mac with
    Xcode
-3. **Plug the phone in and unlock it.** The first time, Phone Mirror builds the
+3. **Plug the phone in and unlock it.** The first time, Phonebooth builds the
    helper, signs it with your team and registers the phone. That takes about a
    minute. After that it starts in a few seconds whenever the phone is unlocked
 
 The helper app, WebDriverAgentRunner, appears on each phone's home screen. With
-a paid team its signing lasts a year. When it expires, Phone Mirror rebuilds it
+a paid team its signing lasts a year. When it expires, Phonebooth rebuilds it
 automatically.
 
 macOS asks for Camera permission the first time, because it treats a phone's
@@ -79,19 +79,19 @@ screen as a camera.
 
 ## How it works
 
-- **Video.** Phone Mirror opts into CoreMediaIO "screen capture devices", which
+- **Video.** Phonebooth opts into CoreMediaIO "screen capture devices", which
   is what QuickTime does before offering an iPhone as a recording source. Each
   plugged-in phone then appears as a capture device, and an
   `AVCaptureVideoPreviewLayer` shows it
 - **Control.** `agent.sh` fetches [WebDriverAgent](https://github.com/appium/WebDriverAgent)
   (pinned to a release), gives it its own bundle ID, and builds it with
   `xcodebuild build-for-testing` for your team. `agent.sh run` starts it with
-  `xcodebuild test-without-building`. Phone Mirror talks to it over the USB
+  `xcodebuild test-without-building`. Phonebooth talks to it over the USB
   tunnel Xcode keeps open to the phone, found through `xcrun devicectl`
 - **Gestures.** WebDriverAgent's own tap route snapshots the app's accessibility
   tree before and after each gesture, which took over 3 seconds per tap on an
-  iPhone XS Max. So `agent.sh` compiles in a small route of Phone Mirror's own,
-  [`wda/PMFastInputCommands.m`](wda/PMFastInputCommands.m), that hands a finger
+  iPhone XS Max. So `agent.sh` compiles in a small route of Phonebooth's own,
+  [`wda/PBFastInputCommands.m`](wda/PBFastInputCommands.m), that hands a finger
   path straight to XCTest's event synthesizer at screen coordinates. A click is a
   one-point path, a drag keeps its original timing, and scrolling is collected
   for 80 ms and sent as one drag that holds still before lifting, so the phone
@@ -100,18 +100,18 @@ screen as a camera.
   same fast event path
 
 The helper's source and build output live in
-`~/Library/Application Support/Phone Mirror`. Logs are in
-`~/Library/Logs/Phone Mirror/`: `phone-mirror.log` for the app and
+`~/Library/Application Support/Phonebooth`. Logs are in
+`~/Library/Logs/Phonebooth/`: `phonebooth.log` for the app and
 `helper-<phone>.log` for each phone's xcodebuild output.
 
 ## Development
 
 ```bash
-swift test --package-path tools/phone-mirror
-bash tools/phone-mirror/restart.sh
+swift test --package-path tools/phonebooth
+bash tools/phonebooth/restart.sh
 ```
 
-`open -g "phonemirror://<command>"` drives the first phone from the terminal
+`open -g "phonebooth://<command>"` drives the first phone from the terminal
 without clicking:
 
 | Command | Does |
@@ -122,7 +122,7 @@ without clicking:
 | `home` | Press Home |
 
 `agent.sh build <udid>` and `agent.sh run <udid>` build and start the helper by
-hand. The team ID comes from `PHONE_MIRROR_TEAM_ID`, then `team-id` in the
+hand. The team ID comes from `PHONEBOOTH_TEAM_ID`, then `team-id` in the
 support folder, then the Apple Development certificate in your keychain.
 
 ## Limitations

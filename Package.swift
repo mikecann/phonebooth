@@ -2,22 +2,22 @@
 import PackageDescription
 
 let package = Package(
-    name: "PhoneMirror",
+    name: "Phonebooth",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "phone-mirror-swift", targets: ["PhoneMirrorApp"])
+        .executable(name: "phonebooth-swift", targets: ["PhoneboothApp"])
     ],
     targets: [
         .executableTarget(
-            name: "PhoneMirrorApp",
-            path: "Sources/PhoneMirrorApp"
+            name: "PhoneboothApp",
+            path: "Sources/PhoneboothApp"
         ),
         .testTarget(
-            name: "PhoneMirrorAppTests",
-            dependencies: ["PhoneMirrorApp"],
-            path: "tests/PhoneMirrorAppTests"
+            name: "PhoneboothAppTests",
+            dependencies: ["PhoneboothApp"],
+            path: "tests/PhoneboothAppTests"
         )
     ]
 )

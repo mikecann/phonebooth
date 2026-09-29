@@ -43,7 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         mirrors.values.forEach { $0.stopHelper() }
     }
 
-    /// `open -g phonemirror://<command>` drives the first phone from the terminal, so control can
+    /// `open -g phonebooth://<command>` drives the first phone from the terminal, so control can
     /// be tested without clicking. See `MirrorWindowController.perform(_:)` for the commands.
     func application(_ application: NSApplication, open urls: [URL]) {
         for url in urls {
@@ -135,7 +135,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             backing: .buffered,
             defer: false
         )
-        window.title = "Phone Mirror"
+        window.title = "Phonebooth"
         window.isReleasedWhenClosed = false
         window.contentView = NSHostingView(rootView: WaitingView())
         return window
@@ -143,8 +143,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
     private func showCameraAccessAlert() {
         let alert = NSAlert()
-        alert.messageText = "Phone Mirror needs camera access"
-        alert.informativeText = "macOS treats a plugged-in iPhone's screen as a camera. Turn on Phone Mirror in Privacy & Security > Camera, then reopen it."
+        alert.messageText = "Phonebooth needs camera access"
+        alert.informativeText = "macOS treats a plugged-in iPhone's screen as a camera. Turn on Phonebooth in Privacy & Security > Camera, then reopen it."
         alert.addButton(withTitle: "Open Privacy Settings")
         alert.addButton(withTitle: "Quit")
         if alert.runModal() == .alertFirstButtonReturn,
@@ -211,14 +211,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         let main = NSMenu()
 
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "About Phone Mirror", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: "About Phonebooth", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Hide Phone Mirror", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(withTitle: "Hide Phonebooth", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         let hideOthers = appMenu.addItem(withTitle: "Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
         hideOthers.keyEquivalentModifierMask = [.command, .option]
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Quit Phone Mirror", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        main.addItem(submenu: appMenu, title: "Phone Mirror")
+        appMenu.addItem(withTitle: "Quit Phonebooth", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        main.addItem(submenu: appMenu, title: "Phonebooth")
 
         main.addItem(submenu: phonesMenu, title: "Phones")
 

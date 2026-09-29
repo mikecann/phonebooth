@@ -1,5 +1,5 @@
 import XCTest
-@testable import PhoneMirrorApp
+@testable import PhoneboothApp
 
 final class KeepAwakeTests: XCTestCase {
     private let now = Date(timeIntervalSinceReferenceDate: 1_000)

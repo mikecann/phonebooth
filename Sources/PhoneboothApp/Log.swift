@@ -1,11 +1,11 @@
 import Foundation
 
-/// Appends to ~/Library/Logs/Phone Mirror/phone-mirror.log so connection problems can be diagnosed later.
+/// Appends to ~/Library/Logs/Phonebooth/phonebooth.log so connection problems can be diagnosed later.
 enum Log {
     static let url: URL = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent("Library/Logs/Phone Mirror/phone-mirror.log")
+        .appendingPathComponent("Library/Logs/Phonebooth/phonebooth.log")
 
-    private static let queue = DispatchQueue(label: "phone-mirror.log")
+    private static let queue = DispatchQueue(label: "phonebooth.log")
     private static let formatter = ISO8601DateFormatter()
 
     static func info(_ message: String) {

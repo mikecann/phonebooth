@@ -1,5 +1,5 @@
 import XCTest
-@testable import PhoneMirrorApp
+@testable import PhoneboothApp
 
 final class DeviceDirectoryTests: XCTestCase {
     private let listing = """

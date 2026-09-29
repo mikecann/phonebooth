@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
-# Builds and starts WebDriverAgent, Apple's UI-testing runner that Phone Mirror uses to
+# Builds and starts WebDriverAgent, Apple's UI-testing runner that Phonebooth uses to
 # send taps, swipes, and typing to a phone over USB.
 #
 # Usage:
 #   agent.sh build <udid>   fetch WebDriverAgent, sign it with your team, register the phone
 #   agent.sh run <udid>     start the helper on the phone (runs until stopped)
 #
-# The team ID comes from PHONE_MIRROR_TEAM_ID, then "team-id" in the support folder, then the
+# The team ID comes from PHONEBOOTH_TEAM_ID, then "team-id" in the support folder, then the
 # Apple Development certificate in your keychain (created by the first successful build).
 
 set -euo pipefail
 
 WDA_VERSION="v16.12.10"
-BUNDLE_ID="com.mikecann.phonemirror.WebDriverAgentRunner"
-SUPPORT_DIR="${PHONE_MIRROR_SUPPORT_DIR:-$HOME/Library/Application Support/Phone Mirror}"
+BUNDLE_ID="com.mikecann.phonebooth.WebDriverAgentRunner"
+SUPPORT_DIR="${PHONEBOOTH_SUPPORT_DIR:-$HOME/Library/Application Support/Phonebooth}"
 WDA_DIR="$SUPPORT_DIR/WebDriverAgent"
 DERIVED_DIR="$SUPPORT_DIR/DerivedData"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Phone Mirror's fast touch routes, compiled into WebDriverAgent (see the file's header).
-FAST_INPUT="$SCRIPT_DIR/wda/PMFastInputCommands.m"
+# Phonebooth's fast touch routes, compiled into WebDriverAgent (see the file's header).
+FAST_INPUT="$SCRIPT_DIR/wda/PBFastInputCommands.m"
 # Records which version of the fast routes the current build contains.
-BUILT_STAMP="$DERIVED_DIR/phone-mirror-routes.sha"
+BUILT_STAMP="$DERIVED_DIR/phonebooth-routes.sha"
 
 usage() {
   echo "Usage: agent.sh build|run <udid>" >&2
@@ -32,8 +32,8 @@ COMMAND="$1"
 UDID="$2"
 
 team_id() {
-  if [[ -n "${PHONE_MIRROR_TEAM_ID:-}" ]]; then
-    echo "$PHONE_MIRROR_TEAM_ID"
+  if [[ -n "${PHONEBOOTH_TEAM_ID:-}" ]]; then
+    echo "$PHONEBOOTH_TEAM_ID"
   elif [[ -f "$SUPPORT_DIR/team-id" ]]; then
     tr -d '[:space:]' < "$SUPPORT_DIR/team-id"
   else
@@ -56,9 +56,9 @@ fetch_source() {
   sed -i '' "s/com\.facebook\.WebDriverAgentRunner/$BUNDLE_ID/g" "$WDA_DIR/WebDriverAgent.xcodeproj/project.pbxproj"
   # Compile the fast touch routes into WebDriverAgentLib by including them from a file it builds.
   local commands="$WDA_DIR/WebDriverAgentLib/Commands"
-  cp "$FAST_INPUT" "$commands/PMFastInputCommands.m"
-  if ! grep -q 'PMFastInputCommands.m' "$commands/FBCustomCommands.m"; then
-    printf '\n#include "PMFastInputCommands.m"\n' >> "$commands/FBCustomCommands.m"
+  cp "$FAST_INPUT" "$commands/PBFastInputCommands.m"
+  if ! grep -q 'PBFastInputCommands.m' "$commands/FBCustomCommands.m"; then
+    printf '\n#include "PBFastInputCommands.m"\n' >> "$commands/FBCustomCommands.m"
   fi
 }
 
@@ -67,7 +67,7 @@ routes_version() {
 }
 
 xctestrun_file() {
-  ls "$DERIVED_DIR"/Build/Products/*.xctestrun 2>/dev/null | head -n 1
+  ls "$DERIVED_DIR"/Build/Products/*.xctestrun 2>/dev/null | head -n 1 || true
 }
 
 case "$COMMAND" in
@@ -75,7 +75,7 @@ case "$COMMAND" in
     TEAM="$(team_id)"
     if [[ -z "$TEAM" ]]; then
       echo "ERROR: no Apple developer team found. Sign into Xcode (Settings > Accounts) and put your" >&2
-      echo "10-character team ID in \"$SUPPORT_DIR/team-id\", or set PHONE_MIRROR_TEAM_ID." >&2
+      echo "10-character team ID in \"$SUPPORT_DIR/team-id\", or set PHONEBOOTH_TEAM_ID." >&2
       exit 1
     fi
     # Two phones plugged in together would otherwise build into the same folder at once.

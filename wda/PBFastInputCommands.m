@@ -1,4 +1,4 @@
-// Phone Mirror's fast input routes for WebDriverAgent. agent.sh copies this file into
+// Phonebooth's fast input routes for WebDriverAgent. agent.sh copies this file into
 // WebDriverAgentLib/Commands and includes it at the end of FBCustomCommands.m, so it's
 // compiled without editing the Xcode project. WDA registers every FBCommandHandler class.
 //
@@ -10,29 +10,29 @@
 #import "XCPointerEventPath.h"
 #import "XCSynthesizedEventRecord.h"
 
-@interface PMFastInputCommands : NSObject <FBCommandHandler>
+@interface PBFastInputCommands : NSObject <FBCommandHandler>
 @end
 
-@implementation PMFastInputCommands
+@implementation PBFastInputCommands
 
 + (NSArray *)routes
 {
   return @[
-    [[FBRoute POST:@"/phonemirror/touch"].withoutSession respondWithTarget:self action:@selector(handleTouch:)],
-    [[FBRoute GET:@"/phonemirror/orientation"].withoutSession respondWithTarget:self action:@selector(handleOrientation:)],
-    [[FBRoute POST:@"/phonemirror/nudge"].withoutSession respondWithTarget:self action:@selector(handleNudge:)],
+    [[FBRoute POST:@"/phonebooth/touch"].withoutSession respondWithTarget:self action:@selector(handleTouch:)],
+    [[FBRoute GET:@"/phonebooth/orientation"].withoutSession respondWithTarget:self action:@selector(handleOrientation:)],
+    [[FBRoute POST:@"/phonebooth/nudge"].withoutSession respondWithTarget:self action:@selector(handleNudge:)],
   ];
 }
 
 /// Presses and releases Shift. It types nothing and touches nothing, but it's input, so it
-/// resets the phone's auto-lock timer. Phone Mirror sends it every so often to keep a mirrored
+/// resets the phone's auto-lock timer. Phonebooth sends it every so often to keep a mirrored
 /// phone awake.
 + (id<FBResponsePayload>)handleNudge:(FBRouteRequest *)request
 {
   XCPointerEventPath *path = [[XCPointerEventPath alloc] initForTextInput];
   [path setModifiers:XCUIKeyModifierShift mergeWithCurrentModifierFlags:NO atOffset:0];
   [path setModifiers:XCUIKeyModifierNone mergeWithCurrentModifierFlags:NO atOffset:0.05];
-  XCSynthesizedEventRecord *record = [[XCSynthesizedEventRecord alloc] initWithName:@"Phone Mirror nudge"
+  XCSynthesizedEventRecord *record = [[XCSynthesizedEventRecord alloc] initWithName:@"Phonebooth nudge"
                                                                interfaceOrientation:UIInterfaceOrientationPortrait];
   [record addPointerEventPath:path];
   NSError *error;
@@ -68,7 +68,7 @@
   [path liftUpAtOffset:offset + MAX([request.arguments[@"hold"] doubleValue], 0.03)];
 
   long long orientation = [request.arguments[@"orientation"] longLongValue] ?: UIInterfaceOrientationPortrait;
-  XCSynthesizedEventRecord *record = [[XCSynthesizedEventRecord alloc] initWithName:@"Phone Mirror touch"
+  XCSynthesizedEventRecord *record = [[XCSynthesizedEventRecord alloc] initWithName:@"Phonebooth touch"
                                                                interfaceOrientation:orientation];
   [record addPointerEventPath:path];
   NSError *error;

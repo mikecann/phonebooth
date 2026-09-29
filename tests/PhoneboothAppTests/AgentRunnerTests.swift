@@ -1,5 +1,5 @@
 import XCTest
-@testable import PhoneMirrorApp
+@testable import PhoneboothApp
 
 final class AgentRunnerTests: XCTestCase {
     func testBuildsWhenNothingIsBuiltYet() {

@@ -12,7 +12,7 @@ final class PhoneCaptureSession: @unchecked Sendable {
     var onError: ((String) -> Void)?
 
     private let device: AVCaptureDevice
-    private let queue = DispatchQueue(label: "phone-mirror.capture-session")
+    private let queue = DispatchQueue(label: "phonebooth.capture-session")
     private var observers: [NSObjectProtocol] = []
 
     init(device: AVCaptureDevice) {
