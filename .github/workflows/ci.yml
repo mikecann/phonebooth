@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell syntax
+        run: |
+          for script in *.sh phonebooth tests/*.sh; do
+            bash -n "$script"
+          done
+      - name: Check installer and launcher
+        run: bash tests/install-tests.sh
+      - name: Test Swift package
+        run: swift test
+      - name: Build release
+        run: swift build -c release

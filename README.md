@@ -1,16 +1,71 @@
-# phonebooth
+# <img src="icons/phonebooth.png" width="32" height="32" alt=""> phonebooth
+
+Mirror and control a few iPhones and iPads at once from your Mac over USB
+
+macOS
+
+<!-- media: hero -->
+<!-- ![phonebooth](docs/hero.png) -->
+<!-- media: hero -->
 
 ![Three iPhones and iPads cabled to a Mac, each mirrored in its own frosted window while a pointer taps one screen](docs/header.webp)
 
-Mirror and control several iPhones and iPads at once from your Mac, over USB.
-Each phone gets its own window. Click to tap, drag to swipe, scroll to scroll,
-and type to type.
+## What it is
 
-Apple's own iPhone Mirroring only handles one phone at a time and only over
-Wi-Fi. Phonebooth doesn't have either limit, and it needs no Bluetooth pairing
-or AssistiveTouch.
+Plug in an iPhone or iPad with a cable and it pops up in its own window on the Mac. Plug in a few and they each get one. You click to tap, drag to swipe, scroll to scroll and just type to type.
 
-## What it does
+Apple's own iPhone Mirroring only does one phone over Wi-Fi, so this does a few more than that. The control side goes through WebDriverAgent, which takes a minute to set up the first time but then starts in a few seconds.
+
+## Get it
+
+Paste this into your AI coding agent (Claude Code, Codex, Cursor...):
+
+> Clone https://github.com/mikecann/phonebooth and make it my own. It's one of Mike
+> Cann's personal tools, so read the README first, change anything specific to his
+> setup to suit mine, then help me get it running.
+
+### Or set it up by hand
+
+You'll need macOS 14 or later, full Xcode with its command line tools selected,
+and a USB cable for each phone. Phone control also needs an Apple developer
+team and Developer Mode on the phone, as described below.
+
+```bash
+git clone https://github.com/mikecann/phonebooth.git
+cd phonebooth
+bash install.sh
+bash setup_mac.sh
+```
+
+`install.sh` links the `phonebooth` command into `~/.local/bin`. It prints the
+line to add to your shell config if that directory isn't on PATH. You can pick
+another directory with `bash install.sh /path/to/bin`. Re-run it if you move
+the clone.
+
+`setup_mac.sh` builds and signs `~/Applications/Phonebooth.app`. Launch
+**Phonebooth** from Spotlight, or run `phonebooth`. No API keys or `.env` file
+are needed.
+
+Control needs a few one-off steps:
+
+1. **Sign into Xcode** with an Apple ID that's in a paid Apple Developer Program
+   team (Xcode > Settings > Accounts). A free Apple ID works too, but its signing
+   expires after 7 days
+2. **Turn on Developer Mode** on each phone (Settings > Privacy & Security >
+   Developer Mode). It appears once the phone has been plugged into a Mac with
+   Xcode
+3. **Plug the phone in and unlock it.** The first time, Phonebooth builds the
+   helper, signs it with your team and registers the phone. That takes about a
+   minute. After that it starts in a few seconds whenever the phone is unlocked
+
+The helper app, WebDriverAgentRunner, appears on each phone's home screen. With
+a paid team its signing lasts a year. When it expires, Phonebooth rebuilds it
+automatically.
+
+macOS asks for Camera permission the first time, because it treats a phone's
+screen as a camera.
+
+## Using it
 
 - Opens a window for every iPhone or iPad plugged in with a cable, and closes it
   when the phone is unplugged. Plug in several and each gets its own window
@@ -26,7 +81,7 @@ or AssistiveTouch.
 - The status bar reads 9:41 with full signal and battery while a phone is
   mirrored. iOS does this for any cabled screen capture, which suits recordings
 
-## Controls
+### Controls
 
 | Input | On the phone |
 |---|---|
@@ -49,33 +104,8 @@ or AssistiveTouch.
 The window's subtitle shows the control status: starting, setting up, waiting
 for you to unlock the phone, or ready.
 
-## Setup
-
-```bash
-bash tools/phonebooth/setup_mac.sh
-```
-
-Then launch **Phonebooth** from Spotlight, or run `phonebooth` after
-`bash install_mac.sh`.
-
-Control needs a few one-off steps:
-
-1. **Sign into Xcode** with an Apple ID that's in a paid Apple Developer Program
-   team (Xcode > Settings > Accounts). A free Apple ID works too, but its signing
-   expires after 7 days
-2. **Turn on Developer Mode** on each phone (Settings > Privacy & Security >
-   Developer Mode). It appears once the phone has been plugged into a Mac with
-   Xcode
-3. **Plug the phone in and unlock it.** The first time, Phonebooth builds the
-   helper, signs it with your team and registers the phone. That takes about a
-   minute. After that it starts in a few seconds whenever the phone is unlocked
-
-The helper app, WebDriverAgentRunner, appears on each phone's home screen. With
-a paid team its signing lasts a year. When it expires, Phonebooth rebuilds it
-automatically.
-
-macOS asks for Camera permission the first time, because it treats a phone's
-screen as a camera.
+You can also run `phonebooth stop`, `phonebooth restart` (rebuild in debug
+mode and launch), or `phonebooth setup` (rebuild the installed release app).
 
 ## How it works
 
@@ -107,8 +137,9 @@ The helper's source and build output live in
 ## Development
 
 ```bash
-swift test --package-path tools/phonebooth
-bash tools/phonebooth/restart.sh
+swift test
+bash tests/install-tests.sh
+bash restart.sh
 ```
 
 `open -g "phonebooth://<command>"` drives the first phone from the terminal
@@ -132,3 +163,37 @@ support folder, then the Apple Development certificate in your keychain.
 - No multi-touch gestures like pinch
 - Controlling a phone needs it unlocked. If it locks, unlock it and control
   resumes
+
+## Settings
+
+The scripts accept these environment variables:
+
+| Variable | Purpose |
+|---|---|
+| `PHONEBOOTH_TEAM_ID` | Apple developer team used to sign the phone helper |
+| `PHONEBOOTH_CODESIGN_IDENTITY` | Mac app signing identity, or `-` for ad-hoc signing. Otherwise an Apple Development identity is selected if available |
+| `PHONEBOOTH_APP_DIR` | App destination, defaults to `~/Applications/Phonebooth.app` |
+| `PHONEBOOTH_SUPPORT_DIR` | Helper source, builds and team settings, defaults to `~/Library/Application Support/Phonebooth` |
+| `PHONEBOOTH_BUILD_CONFIGURATION` | Configuration for `build-app.sh`, defaults to `release`. Setup uses release, restart uses debug |
+
+To set a helper team for launches from Spotlight, put its 10-character ID in
+`~/Library/Application Support/Phonebooth/team-id`. Shell environment variables
+aren't automatically available to apps opened from Spotlight.
+
+## Troubleshooting
+
+- If Swift or `xcrun devicectl` is missing, install full Xcode, open it to
+  finish setup, and select it in Xcode > Settings > Locations > Command Line Tools.
+- If video is missing, check Camera permission in System Settings > Privacy &
+  Security > Camera, unlock the phone, and accept its trust prompt.
+- If the subtitle never reaches ready, check Developer Mode, your Xcode account,
+  and `~/Library/Logs/Phonebooth/helper-<phone>.log`. Try `phonebooth restart`.
+- To remove the install, delete the `phonebooth` symlink from the directory you
+  chose and `~/Applications/Phonebooth.app`. Helper data and logs stay in the
+  Library folders listed above until you choose to remove them.
+
+## More tools
+
+My other tools are at [mikerosoft.app](https://mikerosoft.app).
+
+MIT licensed.
