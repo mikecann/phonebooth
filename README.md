@@ -5,10 +5,10 @@ Mirror and control a few iPhones and iPads at once from your Mac over USB
 macOS
 
 <!-- media: hero -->
-<!-- ![phonebooth](docs/hero.png) -->
-<!-- media: hero -->
+![An iPhone mirrored in a Phonebooth window, with a sum tapped into Calculator from the Mac](docs/calculator.png)
 
-![Three iPhones and iPads cabled to a Mac, each mirrored in its own frosted window while a pointer taps one screen](docs/header.webp)
+[Watch it run (8 seconds)](docs/demo.mp4)
+<!-- /media: hero -->
 
 ## What it is
 
