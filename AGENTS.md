@@ -71,6 +71,14 @@ tail -f ~/Library/Logs/"Phonebooth"/phonebooth.log
   the phone's details to open a tunnel if none is up yet. USE_IP doesn't cover
   the MJPEG stream on port 9100, so `agent.sh` patches `FBWebServer.m` to bind
   it to the phone's loopback. Phonebooth doesn't use MJPEG.
+- `AgentRunner` checks the host in WDA's `ServerURLHere->` line. WDA prints the
+  USE_IP address when the binding took effect and the Wi-Fi address otherwise,
+  so any other host means it's listening everywhere. The runner stops it and
+  shows a failure without retrying. Keep that check if the launch path changes.
+- What's left exposed: the tunnel address is reachable from the Mac itself, so
+  any local process or browser tab that knows it can drive the phone, and
+  CORS `*` lets a page read the replies. The tunnel uses a random IPv6 ULA
+  prefix, so a web page can't realistically guess it.
 - Touches go through `POST /phonebooth/touch`, a route in
   `wda/PBFastInputCommands.m`. `agent.sh` copies it into
   WDA's `Commands/` folder and `#include`s it from `FBCustomCommands.m`, so the
