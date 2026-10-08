@@ -64,6 +64,13 @@ tail -f ~/Library/Logs/"Phonebooth"/phonebooth.log
   restarts the helper whenever a command fails.
 - The app reaches WDA at `http://[tunnelIPAddress]:8100`, the USB tunnel address
   from `xcrun devicectl list devices`. No usbmux forwarding is needed.
+- WDA has no authentication and sends `Access-Control-Allow-Origin: *`, so it
+  must never listen on the phone's Wi-Fi. `agent.sh run <udid> <tunnel-ip>`
+  sets `TEST_RUNNER_USE_IP`, which binds WDA's HTTP server to the tunnel
+  address, and refuses to start without one. `AgentRunner` asks devicectl for
+  the phone's details to open a tunnel if none is up yet. USE_IP doesn't cover
+  the MJPEG stream on port 9100, so `agent.sh` patches `FBWebServer.m` to bind
+  it to the phone's loopback. Phonebooth doesn't use MJPEG.
 - Touches go through `POST /phonebooth/touch`, a route in
   `wda/PBFastInputCommands.m`. `agent.sh` copies it into
   WDA's `Commands/` folder and `#include`s it from `FBCustomCommands.m`, so the
@@ -71,10 +78,10 @@ tail -f ~/Library/Logs/"Phonebooth"/phonebooth.log
   automatically. Do not move taps back to `/wda/tap`, `/wda/touchAndHold` or
   `/actions`: they snapshot the app's accessibility tree around every gesture,
   and a single tap took over 3 seconds on an iPhone XS Max.
-- `agent.sh build` writes the route file's SHA to
+- `agent.sh build` writes a SHA of the route file and `agent.sh` itself to
   `DerivedData/phonebooth-routes.sha`. `agent.sh run` exits 3 when it doesn't
-  match, which makes `AgentRunner` rebuild. Edit the `.m` file and the next
-  launch rebuilds the helper by itself.
+  match, which makes `AgentRunner` rebuild. Edit the `.m` file or the source
+  patches in `agent.sh` and the next launch rebuilds the helper by itself.
 - `GET /phonebooth/orientation` returns the raw UIInterfaceOrientation.
   WDA's `/orientation` reports both landscapes as `LANDSCAPE`, which isn't
   enough to place touches. It snapshots the app, so it's only called on connect

@@ -99,15 +99,27 @@ final class AgentRunner {
 
     private func launch() async {
         guard !stopped else { return }
-        guard let info = await DeviceDirectory.lookup(name: phoneName) else {
+        guard var info = await DeviceDirectory.lookup(name: phoneName) else {
             state = .failed("Xcode can't see \(phoneName)")
             retry(after: 5)
             return
         }
+        if info.tunnelAddress == nil {
+            await DeviceDirectory.openTunnel(udid: info.udid)
+            info = await DeviceDirectory.lookup(name: phoneName) ?? info
+        }
+        guard !stopped else { return }
+        // The helper has no authentication, so it only listens on the USB tunnel. Started without
+        // an address it would listen on every interface, including the phone's Wi-Fi.
+        guard let tunnel = info.tunnelAddress else {
+            state = .failed("No USB tunnel to \(phoneName). Is the cable plugged in?")
+            retry(after: 5)
+            return
+        }
         state = .starting
-        run(["run", info.udid], onLine: { [weak self] line in
+        run(["run", info.udid, tunnel], onLine: { [weak self] line in
             if line.contains("ServerURLHere->") {
-                self?.connect(info)
+                self?.connect(tunnel: tunnel)
             } else if line.contains("is locked") || line.contains("to Continue") {
                 self?.state = .locked
             }
@@ -143,16 +155,15 @@ final class AgentRunner {
         }
     }
 
-    /// Talks to the helper through the USB tunnel Xcode keeps open to the phone.
-    private func connect(_ info: PhoneDeviceInfo) {
+    /// Talks to the helper through the USB tunnel address it was started on, the only one it listens on.
+    private func connect(tunnel: String) {
         guard !connecting else { return }
         connecting = true
         let commandFailed: () -> Void = { [weak self] in self?.commandFailed() }
         Task {
             defer { connecting = false }
-            let tunnel = await DeviceDirectory.lookup(name: phoneName)?.tunnelAddress ?? info.tunnelAddress
-            guard let tunnel, let url = URL(string: "http://[\(tunnel)]:8100") else {
-                state = .failed("No USB tunnel to \(phoneName). Is the cable plugged in?")
+            guard let url = URL(string: "http://[\(tunnel)]:8100") else {
+                state = .failed("Couldn't use the USB tunnel address \(tunnel) for \(phoneName)")
                 return
             }
             let agent = PhoneAgent(baseURL: url)
