@@ -117,7 +117,9 @@ mode and launch), or `phonebooth setup` (rebuild the installed release app).
   (pinned to a release), gives it its own bundle ID, and builds it with
   `xcodebuild build-for-testing` for your team. `agent.sh run` starts it with
   `xcodebuild test-without-building`. Phonebooth talks to it over the USB
-  tunnel Xcode keeps open to the phone, found through `xcrun devicectl`
+  tunnel Xcode keeps open to the phone, found through `xcrun devicectl`.
+  WebDriverAgent has no password, so it only listens on that tunnel address,
+  never on the phone's Wi-Fi
 - **Gestures.** WebDriverAgent's own tap route snapshots the app's accessibility
   tree before and after each gesture, which took over 3 seconds per tap on an
   iPhone XS Max. So `agent.sh` compiles in a small route of Phonebooth's own,
@@ -152,8 +154,9 @@ without clicking:
 | `type?text=hello` | Type text |
 | `home` | Press Home |
 
-`agent.sh build <udid>` and `agent.sh run <udid>` build and start the helper by
-hand. The team ID comes from `PHONEBOOTH_TEAM_ID`, then `team-id` in the
+`agent.sh build <udid>` and `agent.sh run <udid> <tunnel-ip>` build and start
+the helper by hand. The tunnel IP is `tunnelIPAddress` in
+`xcrun devicectl list devices --json-output -`. The team ID comes from `PHONEBOOTH_TEAM_ID`, then `team-id` in the
 support folder, then the Apple Development certificate in your keychain.
 
 ## Limitations

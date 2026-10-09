@@ -33,6 +33,8 @@ final class AgentRunner {
     private var connecting = false
     private var lockCheck: Timer?
     private var lastNudge: Date?
+    /// Set when the helper came up on some address other than the USB tunnel, so it was stopped.
+    private var refusedHelper: String?
 
     init(phoneName: String) {
         self.phoneName = phoneName
@@ -41,6 +43,7 @@ final class AgentRunner {
     func start() {
         guard stopped else { return }
         stopped = false
+        refusedHelper = nil
         state = .starting
         Task { await launch() }
     }
@@ -99,15 +102,32 @@ final class AgentRunner {
 
     private func launch() async {
         guard !stopped else { return }
-        guard let info = await DeviceDirectory.lookup(name: phoneName) else {
+        guard var info = await DeviceDirectory.lookup(name: phoneName) else {
             state = .failed("Xcode can't see \(phoneName)")
             retry(after: 5)
             return
         }
+        if info.tunnelAddress == nil {
+            await DeviceDirectory.openTunnel(udid: info.udid)
+            info = await DeviceDirectory.lookup(name: phoneName) ?? info
+        }
+        guard !stopped else { return }
+        // The helper has no authentication, so it only listens on the USB tunnel. Started without
+        // an address it would listen on every interface, including the phone's Wi-Fi.
+        guard let tunnel = info.tunnelAddress else {
+            Log.info("\(phoneName): devicectl has no tunnel address for \(info.udid) yet")
+            state = .failed("No USB tunnel to \(phoneName). Is the cable plugged in?")
+            retry(after: 5)
+            return
+        }
         state = .starting
-        run(["run", info.udid], onLine: { [weak self] line in
+        run(["run", info.udid, tunnel], onLine: { [weak self] line in
             if line.contains("ServerURLHere->") {
-                self?.connect(info)
+                if Self.helperListens(onlyOn: tunnel, serverURLLine: line) {
+                    self?.connect(tunnel: tunnel)
+                } else {
+                    self?.refuseHelper(serverURLLine: line)
+                }
             } else if line.contains("is locked") || line.contains("to Continue") {
                 self?.state = .locked
             }
@@ -121,6 +141,11 @@ final class AgentRunner {
         agent = nil
         stopLockCheck()
         guard !stopped else { return }
+        if let refusedHelper {
+            // Don't retry: a new helper would come up on the same addresses.
+            state = .failed(refusedHelper)
+            return
+        }
         if Self.needsBuild(status: status, output: output) && !builtThisLaunch {
             build(info)
         } else {
@@ -143,16 +168,24 @@ final class AgentRunner {
         }
     }
 
-    /// Talks to the helper through the USB tunnel Xcode keeps open to the phone.
-    private func connect(_ info: PhoneDeviceInfo) {
+    /// WebDriverAgent ignored USE_IP and is listening on every interface, including the phone's
+    /// Wi-Fi. It has no authentication, so stop it rather than use it.
+    private func refuseHelper(serverURLLine line: String) {
+        guard refusedHelper == nil else { return }
+        Log.info("\(phoneName) helper didn't bind to the USB tunnel, stopping it: \(line)")
+        refusedHelper = "The phone helper didn't stay on the USB tunnel, so Phonebooth stopped it. See helper-\(phoneName).log."
+        process?.terminate()
+    }
+
+    /// Talks to the helper through the USB tunnel address it was started on, the only one it listens on.
+    private func connect(tunnel: String) {
         guard !connecting else { return }
         connecting = true
         let commandFailed: () -> Void = { [weak self] in self?.commandFailed() }
         Task {
             defer { connecting = false }
-            let tunnel = await DeviceDirectory.lookup(name: phoneName)?.tunnelAddress ?? info.tunnelAddress
-            guard let tunnel, let url = URL(string: "http://[\(tunnel)]:8100") else {
-                state = .failed("No USB tunnel to \(phoneName). Is the cable plugged in?")
+            guard let url = URL(string: "http://[\(tunnel)]:8100") else {
+                state = .failed("Couldn't use the USB tunnel address \(tunnel) for \(phoneName)")
                 return
             }
             let agent = PhoneAgent(baseURL: url)
@@ -220,6 +253,17 @@ final class AgentRunner {
         return ["provisioning profile", "code signature", "codesign", "could not be verified",
                 "certificate", "not registered", "application verification"]
             .contains { lowered.contains($0) }
+    }
+
+    /// WebDriverAgent logs `ServerURLHere->http://<host>:<port><-ServerURLHere` once it's listening.
+    /// The host is the USE_IP address when that took effect, and the phone's Wi-Fi address (or
+    /// loopback) when it didn't, in which case it's listening on every interface.
+    nonisolated static func helperListens(onlyOn tunnel: String, serverURLLine line: String) -> Bool {
+        guard !tunnel.isEmpty,
+              let start = line.range(of: "ServerURLHere->http://"),
+              let end = line.range(of: "<-ServerURLHere", range: start.upperBound..<line.endIndex),
+              let portColon = line[start.upperBound..<end.lowerBound].lastIndex(of: ":") else { return false }
+        return line[start.upperBound..<portColon] == tunnel
     }
 
     /// The most useful line of xcodebuild's output for showing the user.

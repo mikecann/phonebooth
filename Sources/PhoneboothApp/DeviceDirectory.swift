@@ -32,6 +32,24 @@ enum DeviceDirectory {
         }.value
     }
 
+    /// The tunnel isn't always up before anything has used the phone. Asking CoreDevice for the
+    /// phone's details connects to it, which should open one.
+    static func openTunnel(udid: String) async {
+        await Task.detached {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+            process.arguments = ["devicectl", "device", "info", "details", "--device", udid, "--quiet", "--timeout", "15"]
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            do {
+                try process.run()
+                process.waitUntilExit()
+            } catch {
+                Log.info("devicectl failed: \(error.localizedDescription)")
+            }
+        }.value
+    }
+
     static func parse(_ data: Data) -> [PhoneDeviceInfo] {
         guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let devices = (root["result"] as? [String: Any])?["devices"] as? [[String: Any]] else { return [] }
